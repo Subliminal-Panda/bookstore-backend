@@ -59,5 +59,40 @@ def get_books():
     books = db.session.query(Book).all()
     return jsonify(multiple_book_schema.dump(books))
 
+@app.route("/book/get/<id>", methods=['GET'])
+def get_book_by_id(id):
+    book = db.session.query(Book).filter(Book.id == id).first()
+    return jsonify(book_schema.dump(book))
+
+@app.route("/book/delete/<id>", methods=['DELETE'])
+def delete_book_by_id(id):
+    book = db.session.query(Book).filter(Book.id == id).first()
+    db.session.delete(book)
+    db.session.commit()
+    return jsonify("Book has been deleted.")
+
+@app.route('/book/update/<id>', methods=['PUT'])
+def update_book_by_id(id):
+    if request.content_type != "application/json":
+        return jsonify("Error: Data must be JSON.")
+
+    post_data = request.get_json()
+    title = post_data.get('title')
+    author = post_data.get('author')
+    review = post_data.get('review')
+    genre = post_data.get('genre')
+
+    book = db.session.query(Book).filter(Book.id == id).first()
+
+    if title != None:
+        book.title = title
+    if author != None:
+        book.author = author
+    if review != None:
+        book.review = review
+
+    db.session.commit()
+    return jsonify("Book Updated Successfully")
+
 if __name__ == "__main__":
     app.run(debug=True)
